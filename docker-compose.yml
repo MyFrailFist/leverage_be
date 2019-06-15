@@ -1,0 +1,48 @@
+version: '3'
+services:
+  db:
+    container_name: angelhack_main_app_db
+    image: mysql:5.6
+    expose:
+      - 3306
+    environment:  
+      MYSQL_DATABASE: main_app
+      MYSQL_ROOT_PASSWORD: main_app_2019
+      MYSQL_USER: root
+    volumes:
+      - ./mycustom.cnf:/etc/mysql/conf.d/custom.cnf
+      # - /tmp/docker_backups/projects/angelhack_main_app/mysql/data:/var/lib/mysql
+  web:
+    container_name: angelhack_main_app_web
+    build: .
+    image: angelhack_main_app_web_image
+    #command is run from docker entry point
+    restart: always
+    volumes:
+      - .:/docker_api
+    expose:
+      - 8000
+    depends_on:
+      - db
+  nginx:
+    container_name: main_app_be_nginx
+    restart: always
+    depends_on:
+      - web
+    build: ./nginx
+    ports:
+      - 9999:80
+    volumes:
+      - .:/docker_api
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+  phpmyadmin:
+    container_name: angelhack_main_app_phpmyadmin
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - 9998:80
+    links: 
+      - db
+
+
+  
+
